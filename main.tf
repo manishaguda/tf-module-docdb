@@ -61,4 +61,21 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
   instance_class     = var.instance_class
 #  storage_encrypted  = true
 #  kms_key_id         = data.aws_kms_key.key.arn
+
+   tags = merge(
+     local.common_tags,
+     { Name = "${var.env}-docdb-cluster-instances-${count.index+1}" }
+  )
+}
+
+resource "aws_ssm_parameter" "docdb_url_catalogue" {
+  name  = "${var.env}.dovdb.DOCDB_url"
+  type  = "String"
+  value = "mongodb://${data.aws_ssm_parameter.DB_ADMIN_USER.value}:${data.aws_ssm_parameter.DB_ADMIN_PASS.value}@${aws_docdb_cluster.docdb.endpoint}:27017/catalogue?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+}
+
+resource "aws_ssm_parameter" "docdb_url_user" {
+name  = "${var.env}.dovdb.DOCDB_url"
+type  = "String"
+value = "mongodb://${data.aws_ssm_parameter.DB_ADMIN_USER.value}:${data.aws_ssm_parameter.DB_ADMIN_PASS.value}@${aws_docdb_cluster.docdb.endpoint}:27017/user?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
 }
